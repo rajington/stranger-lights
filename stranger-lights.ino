@@ -129,49 +129,43 @@ void loop() {
   unsigned long elapsed = millis() - received;
 
   // assuming MILLIS_PER_LETTER, what letter (index) ofthe message should we be on?
-  int index = elapsed/MILLIS_PER_LETTER;
+  int index = (elapsed/MILLIS_PER_LETTER)%message.length();
 
-  // if the letter we should technically be on is within the bounds of the message
-  if(index < message.length()) {
-    // get the character letter we should print
-    char letter = message.charAt(index);
+  // get the character letter we should print
+  char letter = message.charAt(index);
 
-    // if the character is between 'a' and 'z' (no numbers, spaces, or punctuations)
-    if(letter >= 'a' && letter <= 'z'){
-      // how bright to make this LED from 0 to 1, this is what makes them fade in and out
-      // it calculates what percent we are completed with the letter, and makes it fade in from 0-50% and fade out from 50-100%
-      // the formula can be visualized here: https://www.desmos.com/calculator/5qk8imeny4
-      float brightness = 1-abs((2*(elapsed%MILLIS_PER_LETTER)/((float)MILLIS_PER_LETTER))-1);
-      uint8_t value = 255 * brightness;
-      
-      // get the LED number the letter should be in, assuming our array starts at 'a' and ends at 'z'
-      int letter_index = letter-'a';
-      int led = LETTER_LEDS[letter_index];
+  // if the character is between 'a' and 'z' (no numbers, spaces, or punctuations)
+  if(letter >= 'a' && letter <= 'z'){
+    // how bright to make this LED from 0 to 1, this is what makes them fade in and out
+    // it calculates what percent we are completed with the letter, and makes it fade in from 0-50% and fade out from 50-100%
+    // the formula can be visualized here: https://www.desmos.com/calculator/5qk8imeny4
+    float brightness = 1-abs((2*(elapsed%MILLIS_PER_LETTER)/((float)MILLIS_PER_LETTER))-1);
+    uint8_t value = 255 * brightness;
+    
+    // get the LED number the letter should be in, assuming our array starts at 'a' and ends at 'z'
+    int letter_index = letter-'a';
+    int led = LETTER_LEDS[letter_index];
 
-      // get a rotation of colors, so that every NUM_COLORS lights, it loops
-      // e.g. red, yellow, green, blue, red, yellow green blue
-      uint8_t hue = (letter_index%NUM_COLORS*255)/NUM_COLORS;
+    // get a rotation of colors, so that every NUM_COLORS lights, it loops
+    // e.g. red, yellow, green, blue, red, yellow green blue
+    uint8_t hue = (letter_index%NUM_COLORS*255)/NUM_COLORS;
 
-      // set that LED to the color
-      leds[led] = CHSV(hue, 255, value);
-      FastLED.show();
-      // set it to black so we don't have to remember the last LED we turned on
-      leds[led] = CRGB::Black;
-      
-      Serial.print(letter);
-      Serial.print("\t!");
-      Serial.print(led);
-      Serial.print("\t=");
-      Serial.print(brightness);
-      Serial.print("\t@");
-      Serial.print(elapsed);
-      Serial.println();
-    } else {
-      // if the letter wasn't a-z then, we just turn off all the leds
-      FastLED.show();
-    }
+    // set that LED to the color
+    leds[led] = CHSV(hue, 255, value);
+    FastLED.show();
+    // set it to black so we don't have to remember the last LED we turned on
+    leds[led] = CRGB::Black;
+    
+    Serial.print(letter);
+    Serial.print("\t!");
+    Serial.print(led);
+    Serial.print("\t=");
+    Serial.print(brightness);
+    Serial.print("\t@");
+    Serial.print(elapsed);
+    Serial.println();
   } else {
-    // if the letter is beyond the bounds of the message, we just turn off all the leds
+    // if the letter wasn't a-z then, we just turn off all the leds
     FastLED.show();
   }
 }
